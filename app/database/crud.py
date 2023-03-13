@@ -43,3 +43,9 @@ def info_about_user(db: Session, id: int):
     if db_user:
         return db_user
     raise HTTPException(status_code=404, detail="Id not found")
+
+def info_about_user_for_login(db: Session, login: str):
+    db_user = db.query(models.User).\
+        filter(models.User.login == login).one_or_none()
+    if db_user:
+        return db_user
