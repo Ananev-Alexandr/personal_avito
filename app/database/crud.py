@@ -36,3 +36,10 @@ def create_user(db: Session, user: user_schemas.UserCreate):
             status_code=404,
             detail="This username already exists, please use another one"
                 )
+        
+def info_about_user(db: Session, id: int):
+    db_user = db.query(models.User).\
+        filter(models.User.id == id).one_or_none()
+    if db_user:
+        return db_user
+    raise HTTPException(status_code=404, detail="Id not found")
