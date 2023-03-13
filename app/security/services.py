@@ -8,7 +8,6 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.database import crud, models
-from app.database.db import SessionLocal
 from app.security.schemas import TokenData
 from app.database.db_connect import get_db
 
