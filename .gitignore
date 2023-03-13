@@ -7,7 +7,7 @@ venv
 */*/*/__pycache__/
 */*/__pycache__/
 */__pycache__/
-migration
+alembic
 alembic.ini
 bash.exe.stackdump
 config.py

@@ -2,8 +2,8 @@ version: "3"
 
 services:
 
-  db-personal-avito:
-    container_name: db-personal-avito
+  personal-avito:
+    container_name: personal-avito
     restart: always
     image: postgres
     ports:
@@ -20,4 +20,4 @@ services:
       - personal-avito-postgresql-data:/var/lib/postgresql/data/
 
 volumes:
-  personal-avito-postgresql-data:
+ personal-avito-postgresql-data:
