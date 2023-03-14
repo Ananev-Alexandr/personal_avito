@@ -19,6 +19,8 @@ def get_password_hash(password) -> str:
 
 
 def create_user(db: Session, user: user_schemas.UserCreate):
+    if info_about_user_for_login(db, user.login):
+        raise HTTPException(status_code=404, detail="Login already used")
     db_user = models.User(
         password=get_password_hash(user.password),
         first_name=user.first_name,
@@ -33,7 +35,7 @@ def create_user(db: Session, user: user_schemas.UserCreate):
     except Exception:
         raise HTTPException(
             status_code=404,
-            detail="This username already exists, please use another one"
+            detail="Incorrectly filled fields"
                 )
         
 def info_about_user(db: Session, id: int):

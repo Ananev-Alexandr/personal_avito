@@ -9,26 +9,39 @@ def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
         user_id=user_id,
         content=adv.content,
     )
-    db.add(db_adv)
-    db.commit()
-    db.refresh(db_adv)
-    return db_adv
+    try:
+        db.add(db_adv)
+        db.commit()
+        db.refresh(db_adv)
+        return db_adv
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="Incorrectly filled fields"
+                )
 
 
 def get_all_adv(db: Session):
     get_adv = db.query(models.Advertisements).all()
     return get_adv
 
+def find_adv_for_id(db: Session, id: int):
+    get_adv = db.query(models.Advertisements).\
+        filter(models.Advertisements.id == id).one_or_none()
+    return get_adv
 
 
 def info_about_adv(db: Session, id: int):
-    get_adv = db.query(models.Advertisements).\
-        filter(models.Advertisements.id == id).one_or_none()
+    get_adv = find_adv_for_id(db=db, id=id)
     if get_adv:
-        find_feedback = db.query(models.Feedback).\
-            filter(models.Feedback.advertisement_id == id).all()
-        return [get_adv, find_feedback]
+        return get_adv
     raise HTTPException(status_code=404, detail="Id not found")
+
+
+def feedback_interesting_adv(db: Session, id: int):
+    find_feedback = db.query(models.Feedback).\
+            filter(models.Feedback.advertisement_id == id).all()
+    return find_feedback
 
 
 def delete_adv(id: int, user_id: int, db: Session):
