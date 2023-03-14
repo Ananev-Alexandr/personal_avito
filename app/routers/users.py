@@ -25,6 +25,15 @@ async def create_user(user: user_schemas.UserCreate, db: Session = Depends(get_d
     return crud.create_user(db=db, user=user)
 
 
+@router.put("/ban/{id}")
+async def ban(
+    id: int,
+    db: Session = Depends(get_db),
+    security=Depends(services.get_current_user)
+    ):
+    return crud.ban(db=db, id=id, now_user_id=security.id)
+
+
 @router.post("/token", response_model=Token, include_in_schema=False)
 async def login_for_access_token(
     db: Session = Depends(get_db),

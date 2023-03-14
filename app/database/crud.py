@@ -111,3 +111,22 @@ def post_a_feedback(feedback, user_id: int, db: Session):
             status_code=403,
             detail="You have already left a feedback"
                 )
+        
+def ban(id: int, db: Session, now_user_id: int):
+    find_root = db.query(models.User).filter(models.User.id == now_user_id).filter(models.User.role_id == 2).one_or_none()
+    if find_root:
+        interesting_user = db.query(models.User).filter(models.User.id == id)
+        if interesting_user.filter(models.User.active == True).one_or_none():
+            interesting_user = interesting_user.update({models.User.active: False})
+            db.commit()
+            return {"message": "Success ban!"}
+        else:
+            interesting_user = interesting_user.update({models.User.active: True})
+            db.commit()
+            return {"message": "Success unban!"}
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail="Access Denied, You Don’t Have Permission"
+                )
+
