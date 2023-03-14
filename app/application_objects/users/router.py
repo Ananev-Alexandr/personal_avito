@@ -28,7 +28,7 @@ async def ban(
 async def give_root_admin(
     id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(services.get_current_user)
+    current_user=Depends(services.get_current_admin)
     ):
     return crud.give_root_admin(db=db, id=id)
 

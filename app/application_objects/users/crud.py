@@ -48,10 +48,13 @@ def info_about_user_for_login(db: Session, login: str):
         filter(models.User.login == login).one_or_none()
     if db_user:
         return db_user
-    
+
+
 def ban(id: int, db: Session):
     interesting_user = db.query(models.User).filter(models.User.id == id)
-    if interesting_user.filter(models.User.active == True).one_or_none():
+    if interesting_user.one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Id not found")
+    elif interesting_user.filter(models.User.active == True).one_or_none():
         interesting_user = interesting_user.update({models.User.active: False})
         db.commit()
         return {"message": "Success ban!"}
@@ -59,3 +62,19 @@ def ban(id: int, db: Session):
         interesting_user = interesting_user.update({models.User.active: True})
         db.commit()
         return {"message": "Success unban!"}
+
+
+def give_root_admin(id: int, db: Session):
+    interesting_user = db.query(models.User).filter(models.User.id == id)
+    if interesting_user.one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Id not found")
+    elif interesting_user.filter(models.User.active == False).one_or_none():
+        raise HTTPException(status_code=404, detail="User in ban")
+    elif interesting_user.one_or_none().role_id == 2:
+        raise HTTPException(status_code=404, detail="The user is already an admin")
+    elif interesting_user.one_or_none():
+        interesting_user = interesting_user.update({models.User.role_id: 2})
+        db.commit()
+        return {"message": "You have given admin rights!"}
+    else:
+        raise HTTPException(status_code=404, detail="User in ban")
