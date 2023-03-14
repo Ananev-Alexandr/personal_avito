@@ -16,7 +16,7 @@ router = APIRouter(tags=["users"])
 
 
 @router.get("/")
-async def hello(security=Depends(services.get_current_user)) -> dict:
+async def hello(current_user=Depends(services.get_current_user)) -> dict:
     return {"Hello": "World"}
 
 
@@ -29,9 +29,9 @@ async def create_user(user: user_schemas.UserCreate, db: Session = Depends(get_d
 async def ban(
     id: int,
     db: Session = Depends(get_db),
-    security=Depends(services.get_current_user)
+    current_user=Depends(services.get_current_user)
     ):
-    return crud.ban(db=db, id=id, now_user_id=security.id)
+    return crud.ban(db=db, id=id, current_user=current_user)
 
 
 @router.post("/token", response_model=Token, include_in_schema=False)
