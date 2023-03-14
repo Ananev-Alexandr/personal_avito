@@ -18,6 +18,14 @@ async def create_advertisements(
     return crud.create_advertisement(db=db, adv=adv, user_id=security.id)
 
 
+@router.post("/all_advertisements/")
+async def all_advertisements(
+    db: Session = Depends(get_db),
+    security=Depends(services.get_current_user)
+        ):
+    return crud.get_all_adv(db=db)
+
+
 @router.get("/advertisements/{id}/", response_model=adv_schemas.AdvDB)
 async def info_about_adv(
     id: int,

@@ -62,6 +62,11 @@ def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
     return db_adv
 
 
+def get_all_adv(db: Session):
+    get_adv = db.query(models.Advertisements).all()
+    return get_adv
+
+
 def info_about_adv(db: Session, id: int):
     get_adv = db.query(models.Advertisements).\
         filter(models.Advertisements.id == id).one_or_none()
