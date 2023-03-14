@@ -7,7 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.database import crud, models
+from app.database import models
+from app.application_objects.users import crud
 from app.security.schemas import TokenData
 from app.database.db_connect import get_db
 
@@ -80,7 +81,7 @@ async def get_current_admin(
         ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="You do not have administrator rights",
         headers={"WWW-Authenticate": "Bearer"},
     )
     user = await get_current_user(token, db)
