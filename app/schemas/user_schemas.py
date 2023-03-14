@@ -20,6 +20,7 @@ class UserOut(BaseModel):
     date_of_registration: datetime
     role_id: int
     time_zone: datetime
+    active: bool
 
     class Config:
         orm_mode = True
