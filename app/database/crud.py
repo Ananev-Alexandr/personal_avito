@@ -91,3 +91,23 @@ def delete_adv(id: int, user_id: int, db: Session):
             status_code=403,
             detail="Its not your post, post not found"
                 )
+        
+def post_a_feedback(feedback, user_id: int, db: Session):
+    find_feedback = db.query(models.Feedback).\
+        filter(models.Feedback.advertisement_id == feedback.advertisement_id).\
+            filter(models.Feedback.user_id == user_id).one_or_none()
+    if not find_feedback:
+        fb = models.Feedback(
+        user_id=user_id,
+        message=feedback.message,
+        rate=feedback.rate,
+        advertisement_id=feedback.advertisement_id
+    )
+        db.add(fb)
+        db.commit()
+        return {"message": "Success!"}
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="You have already left a feedback"
+                )

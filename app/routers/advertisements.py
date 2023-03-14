@@ -42,3 +42,16 @@ async def delete_advt(
     security=Depends(services.get_current_user)
         ):
     return crud.delete_adv(id=id, user_id=security.id, db=db)
+
+
+@router.post("/feedback/")
+async def post_a_feedback(
+    fb: adv_schemas.FeedbackIn,
+    db: Session = Depends(get_db),
+    security=Depends(services.get_current_user)
+        ):
+    return crud.post_a_feedback(
+        feedback=fb,
+        user_id=security.id,
+        db=db
+        )
