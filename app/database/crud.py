@@ -60,3 +60,11 @@ def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
     db.commit()
     db.refresh(db_adv)
     return db_adv
+
+
+def info_about_adv(db: Session, id: int):
+    get_adv = db.query(models.Advertisements).\
+        filter(models.Advertisements.id == id).one_or_none()
+    if get_adv:
+        return get_adv
+    raise HTTPException(status_code=404, detail="Id not found")
