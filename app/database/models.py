@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from app.database.db import Base
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -24,6 +24,7 @@ class User(Base):
     date_of_registration = Column(DateTime, default=datetime.now)
     role_id = Column(ForeignKey("role_table.id"), default=1)
     time_zone = Column(DateTime, default=datetime.now)
+    active = Column(Boolean, default=True)
     
     role = relationship("Role", back_populates="user")
 
