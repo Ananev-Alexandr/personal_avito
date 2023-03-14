@@ -64,6 +64,8 @@ def delete_adv(id: int, user_id: int, db: Session):
         
         
 def post_a_feedback(feedback, user_id: int, db: Session):
+    if find_adv_for_id(db=db, id=feedback.advertisement_id) is None:
+        raise HTTPException(status_code=404, detail="Id not found")
     find_feedback = db.query(models.Feedback).\
         filter(models.Feedback.advertisement_id == feedback.advertisement_id).\
             filter(models.Feedback.user_id == user_id).one_or_none()
@@ -74,6 +76,12 @@ def post_a_feedback(feedback, user_id: int, db: Session):
         rate=feedback.rate,
         advertisement_id=feedback.advertisement_id
     )
-        db.add(fb)
-        db.commit()
-        return {"message": "Success!"}
+        try:
+            db.add(fb)
+            db.commit()
+            return {"message": "Success!"}
+        except Exception:
+            raise HTTPException(
+                status_code=404,
+                detail="Incorrectly filled fields"
+                    )
