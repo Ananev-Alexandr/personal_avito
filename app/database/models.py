@@ -38,6 +38,7 @@ class Advertisements(Base):
     date_of_publication = Column(String, default=datetime.now)
     
     #TODO relationship
+    fb = relationship("Feedback", back_populates="adv")
     
 
 
@@ -52,3 +53,17 @@ class Comments(Base):
     
     
     #TODO relationship
+    
+    
+class Feedback(Base):
+    __tablename__ = "feedback_table"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    advertisement_id = Column(Integer, ForeignKey("advertisement_table.id"), nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user_table.id"), nullable=False, primary_key=True)
+    message = Column(String, nullable=False)
+    rate = Column(Integer)
+    
+    adv = relationship("Advertisements", back_populates="fb")
+    
+    
