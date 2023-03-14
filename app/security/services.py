@@ -65,6 +65,25 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
     user = crud.info_about_user_for_login(db=db, login=token_data.username)
+    if not user.active:
+        raise HTTPException(
+            status_code=404,
+            detail="Access Denied, You Don’t Have Permission"
+                )
     if user is None:
+        raise credentials_exception
+    return user
+
+async def get_current_admin(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+        ):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    user = await get_current_user(token, db)
+    if user.role_id != 2:
         raise credentials_exception
     return user
