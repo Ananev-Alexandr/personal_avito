@@ -55,3 +55,11 @@ async def post_a_feedback(
         user_id=current_user.id,
         db=db
         )
+    
+@router.get("/advertisements/{id}")
+async def feedback_interesting_adv(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_user)
+        ):
+    return crud.feedback_interesting_adv(id=id, db=db)
