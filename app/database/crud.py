@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from app.schemas import user_schemas
+from app.schemas import user_schemas, adv_schemas
 from app.database import models
 
 
@@ -49,3 +49,14 @@ def info_about_user_for_login(db: Session, login: str):
         filter(models.User.login == login).one_or_none()
     if db_user:
         return db_user
+    
+
+def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
+    db_adv = models.Advertisements(
+        user_id=user_id,
+        content=adv.content,
+    )
+    db.add(db_adv)
+    db.commit()
+    db.refresh(db_adv)
+    return db_adv
