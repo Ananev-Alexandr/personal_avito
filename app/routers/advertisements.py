@@ -33,3 +33,12 @@ async def info_about_adv(
     security=Depends(services.get_current_user)
         ):
     return crud.info_about_adv(id=id, db=db)
+
+
+@router.delete("/advertisements/{id}/")
+async def delete_advt(
+    id: int,
+    db: Session = Depends(get_db),
+    security=Depends(services.get_current_user)
+        ):
+    return crud.delete_adv(id=id, user_id=security.id, db=db)

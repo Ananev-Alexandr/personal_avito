@@ -73,3 +73,21 @@ def info_about_adv(db: Session, id: int):
     if get_adv:
         return get_adv
     raise HTTPException(status_code=404, detail="Id not found")
+
+
+def delete_adv(id: int, user_id: int, db: Session):
+    find_adv = db.query(models.Advertisements).\
+        filter(
+            models.Advertisements.id == id,
+            models.Advertisements.user_id == user_id
+                ).one_or_none()
+    if find_adv:
+        adv = db.query(models.Advertisements).filter(models.Advertisements.id == id).first()
+        db.delete(adv)
+        db.commit()
+        return {"message": "Success delete!"}
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="Its not your post, post not found"
+                )
