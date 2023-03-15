@@ -63,9 +63,29 @@ def delete_adv(id: int, user_id: int, db: Session):
                 )
 
         
-        
+def delete_feedback_advt_by_admin(feedback_id: int, db: Session):
+    find_feedback = db.query(models.Feedback).\
+        filter(models.Feedback.id == feedback_id)
+    if find_feedback.one_or_none() is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Feedback not found"
+                )
+    find_feedback = find_feedback.one_or_none()
+    try:
+        db.delete(find_feedback)
+        db.commit()
+        return {"message": "Success delete!"}
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="Incorrectly filled fields"
+                )
+
+
+
 def post_a_feedback(feedback, user_id: int, db: Session):
-    if find_adv_for_id(db=db, id=feedback.advertisement_id) is None:
+    if find_adv_for_id(db=db, adv=feedback.advertisement_id) is None:
         raise HTTPException(status_code=404, detail="Id not found")
     find_feedback = db.query(models.Feedback).\
         filter(models.Feedback.advertisement_id == feedback.advertisement_id).\
@@ -86,3 +106,11 @@ def post_a_feedback(feedback, user_id: int, db: Session):
                 status_code=404,
                 detail="Incorrectly filled fields"
                     )
+            
+def finde_feedback(adv_id: int, db: Session):
+    adv = find_adv_for_id(db=db, id=adv_id)
+    if adv is None:
+        raise HTTPException(status_code=404, detail="Id not found")
+    all_feedback_in_adv = db.query(models.Feedback).\
+        filter(models.Feedback.advertisement_id == adv_id).all()
+    return all_feedback_in_adv

@@ -25,6 +25,36 @@ async def all_advertisements(
         ):
     return crud.get_all_adv(db=db)
 
+@router.post("/feedback/")
+async def post_a_feedback(
+    fb: adv_schemas.FeedbackIn,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_user)
+        ):
+    return crud.post_a_feedback(
+        feedback=fb,
+        user_id=current_user.id,
+        db=db
+        )
+
+
+@router.post("/finde_feedback/{adv_id}/")
+async def finde_feedback(
+    adv_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_admin)
+        ):
+    return crud.finde_feedback(adv_id=adv_id,db=db)
+
+
+@router.get("/advertisements/{id}")
+async def feedback_interesting_adv(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_user)
+        ):
+    return crud.feedback_interesting_adv(id=id, db=db)
+
 
 @router.get("/advertisements/{id}/")
 async def info_about_adv(
@@ -44,22 +74,11 @@ async def delete_advt(
     return crud.delete_adv(id=id, user_id=current_user.id, db=db)
 
 
-@router.post("/feedback/")
-async def post_a_feedback(
-    fb: adv_schemas.FeedbackIn,
+@router.delete("/delete_feedback_advertisements/{feedback_id}/")
+async def delete_feedback_advt_by_admin(
+    feedback_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(services.get_current_user)
+    current_user=Depends(services.get_current_admin)
         ):
-    return crud.post_a_feedback(
-        feedback=fb,
-        user_id=current_user.id,
-        db=db
-        )
-    
-@router.get("/advertisements/{id}")
-async def feedback_interesting_adv(
-    id: int,
-    db: Session = Depends(get_db),
-    current_user=Depends(services.get_current_user)
-        ):
-    return crud.feedback_interesting_adv(id=id, db=db)
+    return crud.delete_feedback_advt_by_admin(feedback_id=feedback_id, db=db)
+
