@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from app.database.db_connect import get_db
 from app.security import services
 from app.application_objects.advertisements import crud
+from fastapi_pagination import paginate, Page
+
 
 router = APIRouter(tags=["Advertisements"])
 
@@ -18,12 +20,13 @@ async def create_advertisements(
     return crud.create_advertisement(db=db, adv=adv, user_id=current_user.id)
 
 
-@router.post("/all_advertisements/")
+@router.post("/all_advertisements/", response_model=Page[adv_schemas.FilterAdv])
 async def all_advertisements(
+    filter_and_sort: adv_schemas.FilterAndSortAdv,
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
-    return crud.get_all_adv(db=db)
+    return paginate(crud.get_all_adv(filter_and_sort=filter_and_sort, db=db))
 
 @router.post("/feedback/")
 async def post_a_feedback(
