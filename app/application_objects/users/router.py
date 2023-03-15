@@ -24,6 +24,15 @@ async def ban(
     return crud.ban(db=db, id=id)
 
 
+@router.put("/unban/{id}")
+async def unban(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_admin)
+    ):
+    return crud.unban(db=db, id=id)
+
+
 @router.put("/give_root_admin/{id}")
 async def give_root_admin(
     id: int,
