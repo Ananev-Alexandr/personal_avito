@@ -5,6 +5,7 @@ from fastapi import Path
 
 class AdvIn(BaseModel):
     content: str
+    group_id: int
 
 
 class AdvDB(AdvIn):

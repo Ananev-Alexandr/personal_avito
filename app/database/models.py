@@ -37,24 +37,20 @@ class Advertisements(Base):
     user_id = Column(Integer, ForeignKey("user_table.id"), nullable=False)
     content = Column(String, nullable=False)
     date_of_publication = Column(String, default=datetime.now)
+    group_id = Column(Integer, ForeignKey("advertisement_group_table.id"), nullable=False)
     
-    #TODO relationship
     fb = relationship("Feedback", back_populates="adv")
+    adv_g = relationship("AdvertisementsGroup", back_populates="advg")
     
+    
+class AdvertisementsGroup(Base):
+    __tablename__ = "advertisement_group_table"
+    
+    id = Column(Integer, primary_key=True)
+    group_name = Column(String, nullable=False)
+    
+    advg = relationship("Advertisements", back_populates="adv_g")
 
-
-class Comments(Base):
-    __tablename__ = "comment_table"
-    
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("user_table.id"), nullable=False)
-    advertisement_id = Column(Integer, ForeignKey("advertisement_table.id"), nullable=False)
-    content = Column(String, nullable=False)
-    date_of_create = Column(DateTime, default=datetime.now)
-    
-    
-    #TODO relationship
-    
     
 class Feedback(Base):
     __tablename__ = "feedback_table"

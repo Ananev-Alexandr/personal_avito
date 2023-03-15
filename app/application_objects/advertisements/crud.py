@@ -8,6 +8,7 @@ def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
     db_adv = models.Advertisements(
         user_id=user_id,
         content=adv.content,
+        group_id=adv.group_id
     )
     try:
         db.add(db_adv)
