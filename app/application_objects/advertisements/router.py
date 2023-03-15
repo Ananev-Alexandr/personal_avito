@@ -50,6 +50,15 @@ async def finde_feedback(
     return crud.finde_feedback(adv_id=adv_id,db=db)
 
 
+@router.post("/complaint_advertisement/{adv_id}/")
+async def complaint_advertisement(
+    complaint: adv_schemas.ComplaintIn,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_user)
+        ):
+    return crud.complaint_advertisement(complaint=complaint,db=db,current_user=current_user)
+
+
 @router.get("/advertisements/{id}")
 async def feedback_interesting_adv(
     id: int,
@@ -67,6 +76,14 @@ async def info_about_adv(
         ):
     return crud.info_about_adv(id=id, db=db)
 
+@router.get("/complaint/{adv_id}/")
+async def get_complaint_interresting_adv(
+    adv_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_admin)
+        ):
+    return crud.get_complaint_interresting_adv(adv_id=adv_id, db=db)
+    
 
 @router.put("/advertisements/{id}/")
 async def сhanging_the_group_adv(

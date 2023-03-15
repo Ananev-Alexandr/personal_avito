@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Enum
 from app.database.db import Base
 from datetime import datetime
 from sqlalchemy.orm import relationship
+import enum
 
 
 
@@ -27,6 +28,7 @@ class User(Base):
     active = Column(Boolean, default=True)
     
     role = relationship("Role", back_populates="user")
+    complaint_user = relationship("Complaint", back_populates="user")
 
 
 
@@ -42,6 +44,7 @@ class Advertisements(Base):
     
     fb = relationship("Feedback", back_populates="adv")
     adv_g = relationship("AdvertisementsGroup", back_populates="advg")
+    complaint_adv = relationship("Complaint", back_populates="adv")
     
     
 class AdvertisementsGroup(Base):
@@ -51,7 +54,7 @@ class AdvertisementsGroup(Base):
     group_name = Column(String, nullable=False)
     
     advg = relationship("Advertisements", back_populates="adv_g")
-
+    
     
 class Feedback(Base):
     __tablename__ = "feedback_table"
@@ -65,3 +68,23 @@ class Feedback(Base):
     adv = relationship("Advertisements", back_populates="fb")
     
     
+    
+class MyEnum(enum.Enum):
+    spam = 1
+    prohibited_goods = 2
+    fraud = 3
+    candid_image = 4
+    
+    
+class Complaint(Base):
+    __tablename__ = "complaint_table"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    advertisement_id = Column(Integer, ForeignKey("advertisement_table.id"), nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user_table.id"), nullable=False, primary_key=True)
+    message = Column(String, nullable=False)
+    type_of_complaint = (Enum(MyEnum))
+    date_of_create = Column(String, default=datetime.now)
+    
+    user = relationship("User", back_populates="complaint_user")
+    adv = relationship("Advertisements", back_populates="complaint_adv")

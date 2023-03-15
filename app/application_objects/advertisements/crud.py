@@ -202,3 +202,46 @@ def sort_adv(query, group_filters: dict):
     query = query.order_by(asc_or_desc(db_column))
 
     return query
+
+def complaint_advertisement(complaint: adv_schemas.ComplaintIn, db: Session, current_user):
+    if find_adv_for_id(db=db, id=complaint.advertisement_id) is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Advertisement not found"
+                )
+    find_complaint = db.query(models.Complaint).\
+        filter(
+            models.Complaint.user_id == current_user.id,
+            models.Complaint.advertisement_id == complaint.advertisement_id,
+                ).one_or_none()
+    if find_complaint:
+        raise HTTPException(
+            status_code=403,
+            detail="You have already left a complaint"
+                )
+    complaint = models.Complaint(
+            advertisement_id=complaint.advertisement_id,
+            user_id=current_user.id,
+            message=complaint.message,
+            type_of_complaint=complaint.type_of_complaint
+        )
+    try:
+        db.add(complaint)
+        db.commit()
+        db.refresh(complaint)
+        return complaint
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="Incorrectly filled fields"
+                )
+
+
+def get_complaint_interresting_adv(adv_id: int, db: Session):
+    if find_adv_for_id(db=db, id=adv_id) is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Advertisement not found"
+                )
+    adv = db.query(models.Complaint).filter(models.Complaint.advertisement_id == adv_id).all()
+    return adv
