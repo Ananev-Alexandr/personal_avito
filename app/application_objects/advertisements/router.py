@@ -11,7 +11,7 @@ from fastapi_pagination import paginate, Page
 router = APIRouter(tags=["Advertisements"])
 
 
-@router.post("/advertisements/", response_model=adv_schemas.AdvDB)
+@router.post("/create_advertisements/", response_model=adv_schemas.AdvDB)
 async def create_advertisements(
     adv: adv_schemas.AdvIn,
     db: Session = Depends(get_db),
@@ -59,7 +59,7 @@ async def complaint_advertisement(
     return crud.complaint_advertisement(complaint=complaint,db=db,current_user=current_user)
 
 
-@router.get("/advertisements/{id}")
+@router.get("/feedback_interesting_adv/{id}")
 async def feedback_interesting_adv(
     id: int,
     db: Session = Depends(get_db),
@@ -68,7 +68,7 @@ async def feedback_interesting_adv(
     return crud.feedback_interesting_adv(id=id, db=db)
 
 
-@router.get("/advertisements/{id}/")
+@router.get("/info_about_adv/{id}/")
 async def info_about_adv(
     id: int,
     db: Session = Depends(get_db),
@@ -85,7 +85,7 @@ async def get_complaint_interresting_adv(
     return crud.get_complaint_interresting_adv(adv_id=adv_id, db=db)
     
 
-@router.put("/advertisements/{id}/")
+@router.put("/сhanging_the_group_adv/{id}/")
 async def сhanging_the_group_adv(
     id: int,
     new_group: int,
@@ -95,7 +95,7 @@ async def сhanging_the_group_adv(
     return crud.сhanging_the_group_adv(id=id, db=db, new_group=new_group)
 
 
-@router.delete("/advertisements/{id}/")
+@router.delete("/delete_advertisements/{id}/")
 async def delete_advt(
     id: int,
     db: Session = Depends(get_db),

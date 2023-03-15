@@ -16,11 +16,33 @@ def verify_password(plain_password, hashed_password) -> bool:
 def get_password_hash(password) -> str:
     hash = pwd_context.hash(password)
     return hash
+    
+def validate_user_data(user: user_schemas.UserCreate):
+    if len(user.login) < 6:
+        raise HTTPException(
+                status_code=404,
+                detail="The minimum length login is 6"
+                    )
+    if len(user.first_name) < 4:
+        raise HTTPException(
+                status_code=404,
+                detail="The minimum length first_name is 4"
+                    )
+    if len(user.second_name) < 6:
+        raise HTTPException(
+                status_code=404,
+                detail="The minimum length second_name is 6"
+                    )
+    if len(user.password) < 8:
+        raise HTTPException(
+                status_code=404,
+                detail="The minimum length password is 8"
+                    )
 
 
 def create_user(db: Session, user: user_schemas.UserCreate):
-    if info_about_user_for_login(db, user.login):
-        raise HTTPException(status_code=404, detail="Login already used")
+    info_about_user_for_login(db, user.login)
+    validate_user_data(user=user)
     db_user = models.User(
         password=get_password_hash(user.password),
         first_name=user.first_name,
@@ -35,7 +57,7 @@ def create_user(db: Session, user: user_schemas.UserCreate):
     except Exception:
         raise HTTPException(
             status_code=404,
-            detail="Incorrectly filled fields"
+            detail="An unexpected error occurred while adding to the database"
                 )
         
 def info_about_user(db: Session, id: int):
@@ -43,27 +65,43 @@ def info_about_user(db: Session, id: int):
         filter(models.User.id == id).one_or_none()
     if db_user:
         return db_user
-    raise HTTPException(status_code=404, detail="Id not found")
+    raise HTTPException(status_code=404, detail="User not found")
 
 def info_about_user_for_login(db: Session, login: str):
     db_user = db.query(models.User).\
         filter(models.User.login == login).one_or_none()
     if db_user:
         return db_user
-
+    
+def check_login(db: Session, login: str):
+    db_user = db.query(models.User).\
+        filter(models.User.login == login).one_or_none()
+    if db_user:
+        raise HTTPException(
+            status_code=404,
+            detail="Login already used"
+                )
 
 def ban(id: int, db: Session):
-    interesting_user = db.query(models.User).filter(models.User.id == id)
-    if interesting_user.one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Id not found")
-    elif interesting_user.filter(models.User.active == True).one_or_none():
+    info_about_user(db=db, id=id)
+    interesting_user = db.query(models.User).filter(models.User.active == True).one_or_none()
+    if interesting_user:
         interesting_user = interesting_user.update({models.User.active: False})
         db.commit()
         return {"message": "Success ban!"}
     else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    
+def unban(id: int, db: Session):
+    info_about_user(db=db, id=id)
+    interesting_user = db.query(models.User).filter(models.User.active == False).one_or_none()
+    if interesting_user:
         interesting_user = interesting_user.update({models.User.active: True})
         db.commit()
         return {"message": "Success unban!"}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
 
 
 def give_root_admin(id: int, db: Session):

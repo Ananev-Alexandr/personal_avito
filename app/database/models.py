@@ -41,11 +41,11 @@ class Advertisements(Base):
     content = Column(String, nullable=False)
     date_of_publication = Column(String, default=datetime.now)
     group_id = Column(Integer, ForeignKey("advertisement_group_table.id"), nullable=False)
+    price = Column(Integer, nullable=False)
     
     fb = relationship("Feedback", back_populates="adv")
     adv_g = relationship("AdvertisementsGroup", back_populates="advg")
     complaint_adv = relationship("Complaint", back_populates="adv")
-    
     
 class AdvertisementsGroup(Base):
     __tablename__ = "advertisement_group_table"
@@ -69,7 +69,7 @@ class Feedback(Base):
     
     
     
-class MyEnum(enum.Enum):
+class ComplaintType(enum.Enum):
     spam = 1
     prohibited_goods = 2
     fraud = 3
@@ -83,7 +83,7 @@ class Complaint(Base):
     advertisement_id = Column(Integer, ForeignKey("advertisement_table.id"), nullable=False, primary_key=True)
     user_id = Column(Integer, ForeignKey("user_table.id"), nullable=False, primary_key=True)
     message = Column(String, nullable=False)
-    type_of_complaint = (Enum(MyEnum))
+    type_of_complaint = (Enum(ComplaintType))
     date_of_create = Column(String, default=datetime.now)
     
     user = relationship("User", back_populates="complaint_user")

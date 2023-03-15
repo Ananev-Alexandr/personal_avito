@@ -2,13 +2,14 @@ from pydantic import BaseModel
 from datetime import datetime, date
 from fastapi import Path
 from typing import Union
-from app.database.models import MyEnum
+from app.database.models import ComplaintType
 
 
 class AdvIn(BaseModel):
     content: str
     group_id: int
     title: str
+    price: int
 
 class AdvDB(AdvIn):
     id: int
@@ -59,7 +60,7 @@ class FilterAndSortAdv(BaseModel):
 class ComplaintIn(BaseModel):
     advertisement_id: int
     message: str
-    type_of_complaint: MyEnum
+    type_of_complaint: ComplaintType
     
     class Config:
         orm_mode = True
