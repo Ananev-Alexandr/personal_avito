@@ -1,12 +1,11 @@
-from fastapi import APIRouter
-from app.schemas import adv_schemas
 from fastapi import APIRouter, Depends
+from fastapi_pagination import Page, paginate
 from sqlalchemy.orm import Session
-from app.database.db_connect import get_db
-from app.security import services
-from app.application_objects.advertisements import crud
-from fastapi_pagination import paginate, Page
 
+from app.application_objects.advertisements import crud
+from app.database.db_connect import get_db
+from app.schemas import adv_schemas
+from app.security import services
 
 router = APIRouter(tags=["Advertisements"])
 
@@ -17,23 +16,34 @@ async def create_advertisements(
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
-    return crud.create_advertisement(db=db, adv=adv, user_id=current_user.id)
+    """Creating advertisements"""
+    return await crud.create_advertisement(
+        db=db,
+        adv=adv,
+        user_id=current_user.id
+            )
 
 
-@router.post("/all_advertisements/", response_model=Page[adv_schemas.FilterAdv])
+@router.post(
+    "/all_advertisements/",
+    response_model=Page[adv_schemas.FilterAdv]
+        )
 async def all_advertisements(
     filter_and_sort: adv_schemas.FilterAndSortAdv,
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
+    """Ability to receive all advertisements"""
     return paginate(crud.get_all_adv(filter_and_sort=filter_and_sort, db=db))
 
+
 @router.post("/feedback/")
-async def post_a_feedback(
+def post_a_feedback(
     fb: adv_schemas.FeedbackIn,
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
+    """Sending feedback to the ad"""
     return crud.post_a_feedback(
         feedback=fb,
         user_id=current_user.id,
@@ -41,13 +51,14 @@ async def post_a_feedback(
         )
 
 
-@router.post("/finde_feedback/{adv_id}/")
+@router.get("/finde_feedback/{adv_id}/", response_model=Page[adv_schemas.FindFB])
 async def finde_feedback(
     adv_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_admin)
         ):
-    return crud.finde_feedback(adv_id=adv_id,db=db)
+    """Finding an ad of interest"""
+    return paginate(crud.finde_feedback(adv_id=adv_id, db=db))
 
 
 @router.post("/complaint_advertisement/{adv_id}/")
@@ -56,7 +67,12 @@ async def complaint_advertisement(
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
-    return crud.complaint_advertisement(complaint=complaint,db=db,current_user=current_user)
+    """Send a complaint about the advertisement"""
+    return await crud.complaint_advertisement(
+        complaint=complaint,
+        db=db,
+        current_user=current_user
+            )
 
 
 @router.get("/feedback_interesting_adv/{id}")
@@ -65,7 +81,8 @@ async def feedback_interesting_adv(
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
-    return crud.feedback_interesting_adv(id=id, db=db)
+    """The user leaves feedback on a particular advertisement"""
+    return await crud.feedback_interesting_adv(id=id, db=db)
 
 
 @router.get("/info_about_adv/{id}/")
@@ -74,16 +91,19 @@ async def info_about_adv(
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
-    return crud.info_about_adv(id=id, db=db)
+    """Getting information on the advertisements"""
+    return await crud.info_about_adv(id=id, db=db)
 
-@router.get("/complaint/{adv_id}/")
+
+@router.get("/complaint/{adv_id}/", response_model=Page[adv_schemas.ComplaintOut])
 async def get_complaint_interresting_adv(
     adv_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_admin)
         ):
-    return crud.get_complaint_interresting_adv(adv_id=adv_id, db=db)
-    
+    """Getting a list of complaints left on the advertisements of interest"""
+    return paginate(crud.get_complaint_interresting_adv(adv_id=adv_id, db=db))
+
 
 @router.put("/сhanging_the_group_adv/{id}/")
 async def сhanging_the_group_adv(
@@ -92,7 +112,9 @@ async def сhanging_the_group_adv(
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_admin)
         ):
-    return crud.сhanging_the_group_adv(id=id, db=db, new_group=new_group)
+    """The administrator can change the group
+    in the advertisement of interest"""
+    return await crud.сhanging_the_group_adv(id=id, db=db, new_group=new_group)
 
 
 @router.delete("/delete_advertisements/{id}/")
@@ -101,7 +123,8 @@ async def delete_advt(
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_user)
         ):
-    return crud.delete_adv(id=id, user_id=current_user.id, db=db)
+    """The user who created the ad can delete it"""
+    return await crud.delete_adv(id=id, user_id=current_user.id, db=db)
 
 
 @router.delete("/delete_feedback_advertisements/{feedback_id}/")
@@ -110,5 +133,9 @@ async def delete_feedback_advt_by_admin(
     db: Session = Depends(get_db),
     current_user=Depends(services.get_current_admin)
         ):
-    return crud.delete_feedback_advt_by_admin(feedback_id=feedback_id, db=db)
-
+    """The administrator can delete the review
+    of the advertisement of interest"""
+    return await crud.delete_feedback_advt_by_admin(
+        feedback_id=feedback_id,
+        db=db
+            )

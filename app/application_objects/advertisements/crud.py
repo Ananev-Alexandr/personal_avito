@@ -1,10 +1,15 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.schemas import adv_schemas
+
 from app.database import models
+from app.schemas import adv_schemas
 
 
-def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
+async def create_advertisement(
+    db: Session,
+    adv: adv_schemas.AdvIn,
+    user_id: int
+        ):
     db_adv = models.Advertisements(
         user_id=user_id,
         title=adv.title,
@@ -35,23 +40,33 @@ def find_adv_for_id(db: Session, id: int):
     return get_adv
 
 
-def info_about_adv(db: Session, id: int):
+async def info_about_adv(db: Session, id: int):
     get_adv = find_adv_for_id(db=db, id=id)
     if get_adv:
         return get_adv
-    raise HTTPException(status_code=404, detail="The ad with this id was not found")
+    raise HTTPException(
+        status_code=404,
+        detail="The ad with this id was not found"
+            )
 
 
-def feedback_interesting_adv(db: Session, id: int):
+async def feedback_interesting_adv(db: Session, id: int):
     find_feedback = db.query(models.Feedback).\
             filter(models.Feedback.advertisement_id == id).all()
     return find_feedback
 
 
-def delete_adv(id: int, user_id: int, db: Session):
+async def delete_adv(id: int, user_id: int, db: Session):
     func_valid_adv(id=id, user_id=user_id, db=db)
-    adv = db.query(models.Advertisements).filter(models.Advertisements.id == id).first()
+    adv = db.query(models.Advertisements).\
+        filter(models.Advertisements.id == id).one_or_none()
+    comp = db.query(models.Complaint).\
+        filter(models.Complaint.advertisement_id == id).one_or_none()
+    fb = db.query(models.Feedback).\
+        filter(models.Feedback.advertisement_id == id).one_or_none()
     db.delete(adv)
+    db.delete(comp)
+    db.delete(fb)
     db.commit()
     return {"message": "Success delete!"}
 
@@ -64,14 +79,9 @@ def func_valid_adv(id, user_id, db):
             status_code=403,
             detail=f"Advertisments with id: {id}  not found"
                 )
-    if find_adv.user_id != user_id:
-        raise HTTPException(
-            status_code=403,
-            detail=f"U can't delete this advertisments"
-                )
 
 
-def delete_feedback_advt_by_admin(feedback_id: int, db: Session):
+async def delete_feedback_advt_by_admin(feedback_id: int, db: Session):
     fb = find_feedback(feedback_id=feedback_id, db=db).one_or_none()
     try:
         db.delete(fb)
@@ -96,30 +106,38 @@ def find_feedback(db: Session, feedback_id: int):
 
 
 def post_a_feedback(feedback, user_id: int, db: Session):
-    if not find_advertisement_for_feedback(advertisement_id=feedback.advertisement_id, user_id=user_id, db=db):
-        fb = models.Feedback(
+    if not find_advertisement_for_feedback(
+        advertisement_id=feedback.advertisement_id,
         user_id=user_id,
-        message=feedback.message,
-        rate=feedback.rate,
-        advertisement_id=feedback.advertisement_id
-    )
-        try:
-            db.add(fb)
-            db.commit()
-            return {"message": "Success!"}
-        except Exception:
-            raise HTTPException(
-                status_code=404,
-                detail="An unexpected error occurred while adding to the database"
-                    )
+        db=db
+            ):
+        fb = models.Feedback(
+            user_id=user_id,
+            message=feedback.message,
+            rate=feedback.rate,
+            advertisement_id=feedback.advertisement_id
+            )
+    try:
+        db.add(fb)
+        db.commit()
+        return {"message": "Success!"}
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="An unexpected error occurred while adding to the database"
+                )
 
 
-def find_advertisement_for_feedback(advertisement_id: int, user_id: int, db: Session):
+def find_advertisement_for_feedback(
+    advertisement_id: int,
+    user_id: int,
+    db: Session
+        ):
     adv = find_adv_for_id(db=db, id=advertisement_id)
     if adv:
         find_feedback = db.query(models.Feedback).\
             filter(models.Feedback.advertisement_id == advertisement_id).\
-                filter(models.Feedback.user_id == user_id).one_or_none()
+            filter(models.Feedback.user_id == user_id).one_or_none()
     return find_feedback
 
 
@@ -130,19 +148,21 @@ def finde_feedback(adv_id: int, db: Session):
     return all_feedback_in_adv
 
 
-def сhanging_the_group_adv(id: int, db: Session, new_group: int):
+async def сhanging_the_group_adv(id: int, db: Session, new_group: int):
     find_adv_for_id(db=db, id=id)
     db.query(models.Advertisements).\
-        filter(models.Advertisements.id == id).update({models.Advertisements.group_id: new_group})
+        filter(models.Advertisements.id == id).\
+        update({models.Advertisements.group_id: new_group})
     try:
         db.commit()
         return {"message": "Success change!"}
     except Exception:
-            raise HTTPException(
-                status_code=404,
-                detail="An unexpected error occurred while adding to the database"
-                    )
-            
+        raise HTTPException(
+            status_code=404,
+            detail="An unexpected error occurred while adding to the database"
+                )
+
+
 def get_all_adv(filter_and_sort, db: Session):
     schemas_filter, group_filters = validate_params(filter_and_sort)
     query = db.query(models.Advertisements)
@@ -218,14 +238,20 @@ def sort_adv(query, group_filters: dict):
     return query
 
 
-def complaint_advertisement(complaint: adv_schemas.ComplaintIn, db: Session, current_user):
-    find_advertisement_for_complaint(db=db, id=complaint.advertisement_id, current_user=current_user.id)
+async def complaint_advertisement(
+    complaint: adv_schemas.ComplaintIn,
+    db: Session, current_user
+        ):
+    find_advertisement_for_complaint(
+        db=db,
+        id=complaint.advertisement_id,
+        current_user=current_user.id
+            )
     complaint = models.Complaint(
             advertisement_id=complaint.advertisement_id,
             user_id=current_user.id,
-            message=complaint.message,
-            type_of_complaint=complaint.type_of_complaint
-        )
+            message=complaint.message
+                )
     try:
         db.add(complaint)
         db.commit()
@@ -258,5 +284,6 @@ def get_complaint_interresting_adv(adv_id: int, db: Session):
             status_code=403,
             detail="Advertisement not found"
                 )
-    adv = db.query(models.Complaint).filter(models.Complaint.advertisement_id == adv_id).all()
+    adv = db.query(models.Complaint).\
+        filter(models.Complaint.advertisement_id == adv_id).all()
     return adv

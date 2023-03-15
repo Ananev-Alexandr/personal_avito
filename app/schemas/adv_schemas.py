@@ -1,8 +1,8 @@
-from pydantic import BaseModel
-from datetime import datetime, date
-from fastapi import Path
+from datetime import date, datetime
 from typing import Union
-from app.database.models import ComplaintType
+
+from fastapi import Path
+from pydantic import BaseModel
 
 
 class AdvIn(BaseModel):
@@ -11,13 +11,14 @@ class AdvIn(BaseModel):
     title: str
     price: int
 
+
 class AdvDB(AdvIn):
     id: int
     date_of_publication: datetime
 
     class Config:
         orm_mode = True
-        
+
 
 class FilterAdv(BaseModel):
     content: Union[str, None] = None
@@ -31,16 +32,27 @@ class FilterAdv(BaseModel):
 class FeedbackIn(BaseModel):
     advertisement_id: int
     message: str
-    rate: int = Path(title="int",gt=1,le=10)
+    rate: int = Path(title="int", gt=1, le=10)
 
 
 class FeedbackDB(FeedbackIn):
     id: int
     user_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class FindFB(BaseModel):
+    id:int
+    message: str
+    rate: int
+    advertisement_id: int
+    user_id: int
     
     class Config:
         orm_mode = True
-        
+
 
 class DateFilter(BaseModel):
     start_date: Union[date, None] = None
@@ -60,8 +72,14 @@ class FilterAndSortAdv(BaseModel):
 class ComplaintIn(BaseModel):
     advertisement_id: int
     message: str
-    type_of_complaint: ComplaintType
-    
+
     class Config:
         orm_mode = True
-    
+        
+class ComplaintOut(BaseModel):
+    advertisement_id: int
+    message: str
+    user_id: int
+
+    class Config:
+        orm_mode = True

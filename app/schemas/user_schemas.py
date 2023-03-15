@@ -1,19 +1,18 @@
-from pydantic import BaseModel
 from datetime import datetime
-from typing import Union
-from fastapi import Path
 
+from pydantic import BaseModel
 
 
 class UserBase(BaseModel):
     login: str
+
 
 class UserCreate(UserBase):
     first_name: str
     second_name: str
     password: str
 
-    
+
 class UserOut(BaseModel):
     first_name: str
     second_name: str

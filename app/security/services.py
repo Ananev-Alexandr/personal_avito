@@ -7,11 +7,10 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.database import models
 from app.application_objects.users import crud
-from app.security.schemas import TokenData
+from app.database import models
 from app.database.db_connect import get_db
-
+from app.security.schemas import TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -74,6 +73,7 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
 
 async def get_current_admin(
     token: str = Depends(oauth2_scheme),
