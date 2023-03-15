@@ -35,6 +35,7 @@ class Advertisements(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user_table.id"), nullable=False)
+    title = Column(String, nullable=False)
     content = Column(String, nullable=False)
     date_of_publication = Column(String, default=datetime.now)
     group_id = Column(Integer, ForeignKey("advertisement_group_table.id"), nullable=False)

@@ -7,6 +7,7 @@ from app.database import models
 def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
     db_adv = models.Advertisements(
         user_id=user_id,
+        title=adv.title,
         content=adv.content,
         group_id=adv.group_id
     )
@@ -21,10 +22,6 @@ def create_advertisement(db: Session, adv: adv_schemas.AdvIn, user_id: int):
             detail="Incorrectly filled fields"
                 )
 
-
-def get_all_adv(db: Session):
-    get_adv = db.query(models.Advertisements).all()
-    return get_adv
 
 def find_adv_for_id(db: Session, id: int):
     get_adv = db.query(models.Advertisements).\
@@ -130,3 +127,78 @@ def сhanging_the_group_adv(id: int, db: Session, new_group: int):
                 status_code=404,
                 detail="Incorrectly filled fields"
                     )
+            
+def get_all_adv(filter_and_sort, db: Session):
+    schemas_filter, group_filters = validate_params(filter_and_sort)
+    query = db.query(models.Advertisements)
+    query = filter_adv(query, schemas_filter)
+    query = sort_adv(query, group_filters)
+    query = query.all()
+    return query
+
+    
+    
+def validate_params(dict_of_filter) -> dict:
+    dict_of_filter = dict(dict_of_filter)
+    if dict_of_filter.get("filters"):
+        dict_filters = dict(dict_of_filter.get("filters"))
+    if dict_of_filter.get("group"):
+        group_filters = dict(dict_of_filter["group"])
+    if dict_filters.get("publication_date"):
+        dict_filters["publication_date"] = dict(
+            dict_filters["publication_date"]
+                )
+
+    copy_filters = dict_filters.copy()
+    for key, val in copy_filters.items():
+        if val is None:
+            del dict_filters[key]
+
+    return dict_filters, group_filters
+
+def filter_adv(query, dict_of_filter):
+    association_table = {
+        "id": models.Advertisements.id,
+        "title": models.Advertisements.title,
+        "content": models.Advertisements.content,
+        "date_of_publication": models.Advertisements.date_of_publication
+    }
+
+    for key, val in dict_of_filter.items():
+        if key == "id":
+            query = query.filter(association_table[key] == val)
+        elif key == "title":
+            query = query.filter(association_table[key].ilike(f'%{val}%'))
+        elif key == "content":
+            query = query.filter(association_table[key].ilike(f'%{val}%'))
+        elif key == "date_of_publication":
+            date_range = dict(val)
+            if date_range.get("start_date"):
+                query = query.filter(
+                    association_table[key] >= date_range["start_date"]
+                        )
+            if date_range.get("end_date"):
+                query = query.filter(
+                    association_table[key] <= date_range["end_date"]
+                        )
+       
+    return query
+
+
+def sort_adv(query, group_filters: dict):
+    from sqlalchemy import asc, desc
+    association_table = {
+        "id": models.Advertisements.id,
+        "title": models.Advertisements.title,
+        "content": models.Advertisements.content,
+        "date_of_publication": models.Advertisements.date_of_publication,
+    }
+    sort_table = {
+        "asc": asc,
+        "desc": desc
+    }
+    asc_or_desc = sort_table.get(group_filters.get("group_by"))
+    db_column = association_table.get(group_filters.get("sort_by"))
+    query = query.order_by(asc_or_desc(db_column))
+
+    return query
