@@ -7,8 +7,6 @@ venv
 */*/*/__pycache__/
 */*/__pycache__/
 */__pycache__/
-alembic
-alembic.ini
 bash.exe.stackdump
 config.py
 .vscode
