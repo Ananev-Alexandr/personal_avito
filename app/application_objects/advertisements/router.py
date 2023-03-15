@@ -65,6 +65,16 @@ async def info_about_adv(
     return crud.info_about_adv(id=id, db=db)
 
 
+@router.put("/advertisements/{id}/")
+async def сhanging_the_group_adv(
+    id: int,
+    new_group: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(services.get_current_admin)
+        ):
+    return crud.сhanging_the_group_adv(id=id, db=db, new_group=new_group)
+
+
 @router.delete("/advertisements/{id}/")
 async def delete_advt(
     id: int,

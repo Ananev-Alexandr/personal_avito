@@ -114,3 +114,19 @@ def finde_feedback(adv_id: int, db: Session):
     all_feedback_in_adv = db.query(models.Feedback).\
         filter(models.Feedback.advertisement_id == adv_id).all()
     return all_feedback_in_adv
+
+
+def сhanging_the_group_adv(id: int, db: Session, new_group: int):
+    adv = find_adv_for_id(db=db, id=id)
+    if adv is None:
+        raise HTTPException(status_code=404, detail="Id not found")
+    db.query(models.Advertisements).\
+        filter(models.Advertisements.id == id).update({models.Advertisements.group_id: new_group})
+    try:
+        db.commit()
+        return {"message": "Success change!"}
+    except Exception:
+            raise HTTPException(
+                status_code=404,
+                detail="Incorrectly filled fields"
+                    )
