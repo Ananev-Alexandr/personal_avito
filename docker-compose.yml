@@ -2,8 +2,8 @@ version: "3"
 
 services:
 
-  personal-avito:
-    container_name: personal-avito
+  db-personal-avito:
+    container_name: db-personal-avito
     restart: always
     image: postgres
     ports:
@@ -17,7 +17,34 @@ services:
       retries: 5
       start_period: 10s
     volumes:
-      - personal-avito-postgresql-data:/var/lib/postgresql/data/
+      - db-personal-avito-postgresql-data:/var/lib/postgresql/data/
+
+  run-migration:
+    container_name: run-migration
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+    command: bash -c "alembic upgrade head"
+    ports:
+      - 8001:8000
+    volumes:
+      - run-migration-data:/run-migration-data
+
+  personal-avito:
+    container_name: personal-avito
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+    ports:
+      - 8000:8000
+    volumes:
+      - personal-avito-data:/personal-avito-data
+
+
 
 volumes:
- personal-avito-postgresql-data:
+ db-personal-avito-postgresql-data:
+ run-migration-data:
+ personal-avito-data:
+ 
+

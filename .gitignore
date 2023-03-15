@@ -10,3 +10,4 @@ venv
 bash.exe.stackdump
 config.py
 .vscode
+.env_build
